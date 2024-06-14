@@ -92,7 +92,7 @@ defmodule JswatchWeb.IndigloManager do
   end
 
   def handle_info(Wait2Stop, %{st: IndigloOff} = state) do #Entra si el proceso con el timer de 2 secs termina y está apagado
-    IO.puts("ya se pospuso") #avisa que ya se puede posponer
+    IO.puts("si se soltó antes, ya no se pospone, si sueltas después de este mensaje, se va a posponer") #avisa que ya se puede posponer
     {:noreply, %{state | alarm: true}} #cambia la alarm a true, lo que significa que ya se puede posponer
   end
 
