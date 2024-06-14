@@ -1,6 +1,6 @@
 defmodule JswatchWeb.StopwatchManager do
   use GenServer
-
+#inicializa el stopwatch en el tiempo"
   def init(ui) do
     :gproc.reg({:p, :l, :ui_event})
     {:ok, %{ui_pid: ui, count: ~T[00:00:00.00]}}
