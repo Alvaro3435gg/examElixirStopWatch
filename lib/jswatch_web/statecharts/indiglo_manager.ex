@@ -78,6 +78,10 @@ defmodule JswatchWeb.IndigloManager do
   end
 
 # Estas funciones fueron las que agregué yo
+#la idea es que con la variable alarm que agregué en false
+# cuando se aprieta la alarm en dos segundos cambia a true
+#si recibe el realse antes de los dos segundos, alarma es false y no hace nada, solo apaga
+#pero si la recibe después, entonces si la pospone
 
   def handle_info(:"bottom-right-pressed", %{ui_pid: pid, st: AlarmOn} = state) do #entra si está en modo alarma ON y se presiona el botón
     GenServer.cast(pid, :unset_indiglo) #apagar indiglo
