@@ -77,31 +77,32 @@ defmodule JswatchWeb.IndigloManager do
     end
   end
 
+# Estas funciones fueron las que agregué yo
 
-
-  def handle_info(:"bottom-right-pressed", %{ui_pid: pid, st: AlarmOn} = state) do
-    GenServer.cast(pid, :unset_indiglo)
-    Process.send_after(self(), Wait2Stop, 2000)
-    {:noreply, %{state | st: IndigloOff}}
+  def handle_info(:"bottom-right-pressed", %{ui_pid: pid, st: AlarmOn} = state) do #entra si está en modo alarma ON y se presiona el botón
+    GenServer.cast(pid, :unset_indiglo) #apagar indiglo
+    Process.send_after(self(), Wait2Stop, 2000) #manda un proceso en dos secs
+    {:noreply, %{state | st: IndigloOff}} #cambia el estado a indigloOff
   end
 
-  def handle_info(:"bottom-right-pressed", %{ui_pid: pid, st: AlarmOff} = state) do
-    GenServer.cast(pid, :unset_indiglo)
-    Process.send_after(self(), Wait2Stop, 2000)
-    {:noreply, %{state | st: IndigloOff}}
+  def handle_info(:"bottom-right-pressed", %{ui_pid: pid, st: AlarmOff} = state) do #entra si está en modo alarma off y se presiona el botón
+    GenServer.cast(pid, :unset_indiglo) #apagar indiglo
+    Process.send_after(self(), Wait2Stop, 2000) #manda un proceso en dos secs
+    {:noreply, %{state | st: IndigloOff}} #cambia el estado a indigloOff
   end
 
-  def handle_info(Wait2Stop, %{st: IndigloOff} = state) do
-    {:noreply, %{state | alarm: true}}
+  def handle_info(Wait2Stop, %{st: IndigloOff} = state) do #Entra si el proceso con el timer de 2 secs termina y está apagado
+    IO.puts("ya se pospuso") #avisa que ya se puede posponer
+    {:noreply, %{state | alarm: true}} #cambia la alarm a true, lo que significa que ya se puede posponer
   end
 
-  def handle_info(:"bottom-right-released", %{alarm: true} = state) do
-    :gproc.send({:p, :l, :ui_event}, :update_alarm)
-    {:noreply, %{state | alarm: false}}
+  def handle_info(:"bottom-right-released", %{alarm: true} = state) do #si se suelta el botón y alarma es true, manda a llamar a volver a poner la alarma con update alarm
+    :gproc.send({:p, :l, :ui_event}, :update_alarm) #llama a update alarm
+    {:noreply, %{state | alarm: false}} #regresa la alarma a false
   end
 
-  def handle_info(:"bottom-right-released", %{alarm: false} = state) do
-    {:noreply, %{state | alarm: false}}
+  def handle_info(:"bottom-right-released", %{alarm: false} = state) do #si se suelta el botón y la alarma es false, no hace nada, dejándo el reloj apagado
+    {:noreply, %{state | alarm: false}} #regresa la alrma en false
   end
 
 
