@@ -3,7 +3,7 @@ defmodule JswatchWeb.IndigloManager do
 #inicializa sin luz, sin contadores y sin timers
   def init(ui) do
     :gproc.reg({:p, :l, :ui_event})
-    {:ok, %{ui_pid: ui, st: IndigloOff, count: 0, timer1: nil, time2: nil}}
+    {:ok, %{ui_pid: ui, st: IndigloOff, count: 0, timer1: nil, time2: nil, alarm: false}}
   end
 
   #si aprieta top right y esta apagado, lo prende
@@ -91,35 +91,21 @@ defmodule JswatchWeb.IndigloManager do
     {:noreply, %{state | st: IndigloOff}}
   end
 
-  def handle_info(Waiting_snoze, %{st: IndigloOff} = state) do
+  def handle_info(Wait2Stop, %{st: IndigloOff} = state) do
+    {:noreply, %{state | alarm: true}}
+  end
+
+  def handle_info(:"bottom-right-released", %{alarm: true} = state) do
     :gproc.send({:p, :l, :ui_event}, :update_alarm)
-    {:noreply, state}
+    {:noreply, %{state | alarm: false}}
+  end
+
+  def handle_info(:"bottom-right-released", %{alarm: false} = state) do
+    {:noreply, %{state | alarm: false}}
   end
 
 
   #este es mi intento de snoze
-
-  #agarra el botón con el estado de alarma on, apaga y manda a esperar 10 segs
-  def handle_info(:"bottom-right-pressed", %{ui_pid: pid, st: AlarmOn} = state) do
-    IO.puts("intentamos apagar alarma en alarmON")
-    GenServer.cast(pid, :unset_indiglo)
-    Process.send_after(self(), Waiting_snoze, 10000)
-    {:noreply, %{state | count: 0, st: IndigloOff}}
-  end
-
-  #agarra el botón con el estado de alarma off, apaga y manda a esperar 10 segs
-  def handle_info(:"bottom-right-pressed", %{ui_pid: pid, st: AlarmOff} = state) do
-    IO.puts("intentamos apagar alarma en alarmOff")
-    Process.send_after(self(), Waiting_snoze, 10000)
-    GenServer.cast(pid, :unset_indiglo)
-    {:noreply, %{state | count: 0, st: IndigloOff}}
-  end
-
-  #agarra el update alarma, pero el snoze, para que sea instantaneo "creo que en lugar de mandar a update, puedo mandarlo directamente  a start alarm"
-  def handle_info(Waiting_snoze, %{st: IndigloOff} = state) do
-    :gproc.send({:p, :l, :ui_event}, :update_alarm)
-    {:noreply, state}
-  end
 
 
 
