@@ -19,15 +19,6 @@ defmodule JswatchWeb.ClockManager do
     {:noreply, %{state | alarm: alarm}}
   end
 
-
-  #pone una alarma en 0 segundos esta la cree yo
-  def handle_info(:update_alarm_snoze, state) do
-    {_, now} = :calendar.local_time()
-    time = Time.from_erl!(now)
-    alarm = Time.add(time, 0)
-    {:noreply, %{state | alarm: alarm}}
-  end
-
 #es el proceso del reloj, y además si el tiempo llega a una alarma establecida, imprime alarma y manda a empezar alarma
   def handle_info(:working_working, %{ui_pid: ui, time: time, alarm: alarm, st: Working} = state) do
     Process.send_after(self(), :working_working, 1000)

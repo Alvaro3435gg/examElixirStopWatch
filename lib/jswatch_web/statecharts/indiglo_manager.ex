@@ -79,13 +79,28 @@ defmodule JswatchWeb.IndigloManager do
 
 
 
+  def handle_info(:"bottom-right-pressed", %{ui_pid: pid, st: AlarmOn} = state) do
+    GenServer.cast(pid, :unset_indiglo)
+    Process.send_after(self(), Wait2Stop, 2000)
+    {:noreply, %{state | st: IndigloOff}}
+  end
 
+  def handle_info(:"bottom-right-pressed", %{ui_pid: pid, st: AlarmOff} = state) do
+    GenServer.cast(pid, :unset_indiglo)
+    Process.send_after(self(), Wait2Stop, 2000)
+    {:noreply, %{state | st: IndigloOff}}
+  end
+
+  def handle_info(Waiting_snoze, %{st: IndigloOff} = state) do
+    :gproc.send({:p, :l, :ui_event}, :update_alarm)
+    {:noreply, state}
+  end
 
 
   #este es mi intento de snoze
 
   #agarra el botón con el estado de alarma on, apaga y manda a esperar 10 segs
-  def handle_info(:"bottom-left-pressed", %{ui_pid: pid, st: AlarmOn} = state) do
+  def handle_info(:"bottom-right-pressed", %{ui_pid: pid, st: AlarmOn} = state) do
     IO.puts("intentamos apagar alarma en alarmON")
     GenServer.cast(pid, :unset_indiglo)
     Process.send_after(self(), Waiting_snoze, 10000)
@@ -93,7 +108,7 @@ defmodule JswatchWeb.IndigloManager do
   end
 
   #agarra el botón con el estado de alarma off, apaga y manda a esperar 10 segs
-  def handle_info(:"bottom-left-pressed", %{ui_pid: pid, st: AlarmOff} = state) do
+  def handle_info(:"bottom-right-pressed", %{ui_pid: pid, st: AlarmOff} = state) do
     IO.puts("intentamos apagar alarma en alarmOff")
     Process.send_after(self(), Waiting_snoze, 10000)
     GenServer.cast(pid, :unset_indiglo)
@@ -102,7 +117,7 @@ defmodule JswatchWeb.IndigloManager do
 
   #agarra el update alarma, pero el snoze, para que sea instantaneo "creo que en lugar de mandar a update, puedo mandarlo directamente  a start alarm"
   def handle_info(Waiting_snoze, %{st: IndigloOff} = state) do
-    :gproc.send({:p, :l, :ui_event}, :update_alarm_snoze)
+    :gproc.send({:p, :l, :ui_event}, :update_alarm)
     {:noreply, state}
   end
 
